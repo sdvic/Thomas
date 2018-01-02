@@ -85,6 +85,8 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
         g2.setTransform(identityTx);
         drawLowerTracks();//................. Draw Lower Tracks
         g2.setTransform(identityTx);
+        g2.setFont(new Font("Ariel", Font.PLAIN, 44));
+        g2.drawString(String.valueOf("thomasTotalXtranslation = " + thomasTotalXtranslation), 100, 100);
 
     }
 
