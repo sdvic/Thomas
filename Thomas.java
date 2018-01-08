@@ -9,7 +9,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 
@@ -17,34 +16,28 @@ import static javax.imageio.ImageIO.read;
 
 public class Thomas extends JComponent implements ActionListener, Runnable, KeyListener
 {
-    public ThomasUtilities util = new ThomasUtilities(1);
+    public boolean isGoingRight = false;
     private Rectangle2D.Double upperTrackDetectionZone = new Rectangle2D.Double(0, 0, 200, 49);
-    private AffineTransform tx;
     private URL thomasThemeAddress = getClass().getResource("Thomas The Tank Engine Theme Song.wav");
     private AudioClip thomasThemeSong = JApplet.newAudioClip(thomasThemeAddress);
-    private BufferedImage img;
     private Image[] thomasSpriteImageArray = new Image[8];
     private Image gun = Toolkit.getDefaultToolkit().createImage(getClass().getResource("Minigun_SU.png"));
     private int widthOfScreen = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
     private int heightOfScreen = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
     private JFrame mainGameWindow = new JFrame("NewGame");// Makes window with title "NewGame"
     private AffineTransform identityTx = new AffineTransform();
-    private Timer paintTicker = new Timer(20, this);
-    private Timer animationTicker = new Timer(45, this);
+    private AffineTransform thomasTx = new AffineTransform();// Set Thomas to 0, 0
+    private Timer paintTicker = new Timer(100, this);
+    private Timer animationTicker = new Timer(100, this);
     private ImageIcon thomasImageIcon = new ImageIcon();
     private Image thomasSpriteImage;
-    private int pictureCounter;
     private int thomasSpriteImageCounter;
-    private int thomasTotalXtranslation = widthOfScreen / 2;
-    private int thomasYPos = (int) (heightOfScreen * 0.69);
     private Image roadImage;
-    //roadWidth = roadImage.getWidth(mainGameWindow);
     private Image trackImage;
     private int roadXPos = 0;
     private int groundLevelTrackYPos = (int) (heightOfScreen * 0.809);
     private int level2TrackYPos = (int) (heightOfScreen * 0.2);
     private double trackScale = 1.7;
-    public boolean isGoingRight = false;
     private boolean isGoingLeft = true;
     private boolean isNotMoving;
     private boolean isJumping;
@@ -59,6 +52,7 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     private int trackWidth;
     private int roadWidth;
     private int thomasXtranslate;
+    public int x = 0;
 
     public static void main(String[] args)
     {
@@ -71,45 +65,17 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
         loadImages();
         setUpMainGameWindow();
         thomasThemeSong.play();
+        //animationTicker.start();
         paintTicker.start();
-        animationTicker.start();
     }
 
     public void paint(Graphics g)
     {
         g2 = (Graphics2D) g;
-        g2.setTransform(AffineTransform.getScaleInstance(-1, 1));//....................Flip image horizontally
-        drawThomas(g2, isGoingRight);//.................... Draw Thomas
         drawRoad();//........................ Draw Road
         drawUpperTracks();//................. Draw Upper Tracks
-        g2.setTransform(identityTx);
         drawLowerTracks();//................. Draw Lower Tracks
-        g2.setTransform(identityTx);
-        g2.setFont(new Font("Ariel", Font.PLAIN, 44));
-        g2.drawString(String.valueOf("thomasTotalXtranslation = " + thomasTotalXtranslation), 100, 100);
-
-    }
-
-    /***********************************************************************************************
-     * Draw Thomas with sprite files
-     ***********************************************************************************************/
-    private void drawThomas(Graphics g2, boolean isGoingRight)
-    {
-        try {
-            thomasSpriteImageCounter = (thomasSpriteImageCounter + 1) % 8;
-            thomasSpriteImage = thomasSpriteImageArray[thomasSpriteImageCounter];
-        } catch (Exception ex) {
-            System.out.println("error reading thomas thomasSpriteImage from thomas sprite thomasSpriteImage array");
-        }
-        if (isGoingRight) {
-            g2.translate(thomasTotalXtranslation -= 10, 0);// move Thomas to right
-            g2.drawImage(thomasSpriteImage, 0, 0, null);
-        }else
-        {
-            g2.translate(-5000, 0);
-            g2.translate(thomasTotalXtranslation += 10, 0);// move Thomas to right
-            g2.drawImage(thomasSpriteImage, 0, 0, null);
-        }
+        drawThomas(g2, true);
     }
 
     /***********************************************************************************************
@@ -118,12 +84,12 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     private void drawRoad()
     {
         g2.setTransform(identityTx);
-        g2.translate(roadWidth, heightOfScreen - 200);
-        g2.drawImage(roadImage, 0, 0, null);
-        for (int i = 0; i < 5; i++) //for loop that condenses the drawing of the roads
+        g2.translate(0, heightOfScreen - 200);
+        int u = getToolkit().getScreenSize().width;
+        for (int i = 0; i < (int) (getToolkit().getScreenSize().width/roadImage.getWidth(null)); i++) //fits road images to screen width
         {
-            g2.translate(roadImage.getWidth(null), 0);
             g2.drawImage(roadImage, 0, 0, null);
+            g2.translate(roadImage.getWidth(null), 0);
         }
     }
 
@@ -133,10 +99,12 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     private void drawUpperTracks()
     {
         g2.setTransform(identityTx);
-        g2.translate(1000, 500);
-        g2.drawImage(trackImage, 0, 0, null);
-        g2.translate(trackImage.getWidth(null), 0);
-        g2.drawImage(trackImage, 0, 0, null);
+        g2.translate(0, getToolkit().getScreenSize().height/2); // center in screen
+        for (int i = 0; i < 2; i++) //fits track images to screen width
+        {
+            g2.translate(trackImage.getWidth(null), 0);
+            g2.drawImage(trackImage, 0, 0, null);
+        }
     }
 
     /***********************************************************************************************
@@ -146,27 +114,90 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     {
         g2.setTransform(identityTx);
         g2.translate(0, heightOfScreen - 200);
-        for (int i = 0; i < 5; i++) //for loop that condenses the drawing of the tracks
+        for (int i = 0; i < (getToolkit().getScreenSize().getWidth()/trackImage.getWidth(null)); i++) //fits track images to screen width
         {
             g2.drawImage(trackImage, 0, 0, null);
             g2.translate(trackImage.getWidth(null), 0);
         }
     }
+
     /***********************************************************************************************
-     * Respond to animation ticker and paint ticker
+     * Draw Thomas with sprite files
+     ***********************************************************************************************/
+    public void drawThomas(Graphics2D g2, boolean isGoingRight)
+    {
+        g2.setTransform(identityTx);
+        thomasTx.setToTranslation(500, 500);
+        g2.setTransform(thomasTx);
+        try
+        {
+            thomasSpriteImageCounter++;
+            thomasSpriteImageCounter = thomasSpriteImageCounter % 8;
+            thomasSpriteImage = thomasSpriteImageArray[thomasSpriteImageCounter];
+            g2.drawImage(thomasSpriteImage, 0, 0, null);
+
+        } catch (Exception ex)
+        {
+            System.out.println("error reading thomas thomasSpriteImage from thomas sprite thomasSpriteImage array");
+        }
+    }
+
+
+    /***********************************************************************************************
+     * Action Performed.....Respond to animation ticker and paint ticker
      ***********************************************************************************************/
     @Override
     public void actionPerformed(ActionEvent e)
     {
-        if (e.getSource() == paintTicker) {
-            repaint();
+//        if (e.getSource() == animationTicker) {
+//            if (g2 != null) {
+//                if (isGoingRight) {
+//                    g2.setTransform(identityTx);
+//                    drawThomas(g2, true);//.................... Draw Thomas
+//                }
+//                if (!isGoingRight) {
+//                    g2.setTransform(identityTx);
+//                    drawThomas(g2, false);//.................... Draw Thomas
+//                }
+//            }
+//        }
+        repaint();
+    }
+
+    /***********************************************************************************************
+     * Respond to key typed
+     ***********************************************************************************************/
+    @Override
+    public void keyTyped(KeyEvent e)
+    {
+
+    }
+
+    /***********************************************************************************************
+     * Respond to key pressed
+     ***********************************************************************************************/
+    @Override
+    public void keyPressed(KeyEvent e)
+    {
+        if (e.getKeyCode() == KeyEvent.VK_RIGHT) // going right
+        {
+            isGoingRight = true;
         }
-        if (e.getSource() == animationTicker) {
-            if (g2 != null) {
-                drawThomas(g2, true);
-            }
+        if (e.getKeyCode() == KeyEvent.VK_LEFT) // going left
+        {
+            isGoingRight = false;
         }
     }
+
+    /***********************************************************************************************
+     * Respond to key released
+     ***********************************************************************************************/
+    @Override
+    public void keyReleased(KeyEvent e)
+    {
+
+    }
+
     /***********************************************************************************************
      * Get .png files, convert to Image and load sprite array
      ***********************************************************************************************/
@@ -185,11 +216,10 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
             System.out.println("error reading from thomas sprite array");
         }
         roadImage = Toolkit.getDefaultToolkit().createImage(getClass().getResource("ground.png"));
-        trackImage = Toolkit.getDefaultToolkit().createImage(getClass().getResource("Standard Gauge Train Track Sprite.png"));
-        trackWidth = trackImage.getWidth(null);
         roadWidth = roadImage.getWidth(null);
-
+        trackImage = Toolkit.getDefaultToolkit().createImage(getClass().getResource("Standard Gauge Train Track Sprite.png"));
     }
+
     /***********************************************************************************************
      * Set up main JFrame
      ***********************************************************************************************/
@@ -202,28 +232,5 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
         mainGameWindow.getContentPane().setBackground(new Color(200, 235, 255));
         mainGameWindow.setVisible(true);
         mainGameWindow.addKeyListener(this);
-    }
-
-    @Override
-    public void keyTyped(KeyEvent e)
-    {
-
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e)
-    {
-        if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            isGoingRight = false;
-        }
-        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            this.isGoingRight = true;
-        }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e)
-    {
-
     }
 }
