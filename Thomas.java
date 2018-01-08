@@ -27,6 +27,7 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     private JFrame mainGameWindow = new JFrame("NewGame");// Makes window with title "NewGame"
     private AffineTransform identityTx = new AffineTransform();
     private AffineTransform thomasTx = new AffineTransform();// Set Thomas to 0, 0
+    private AffineTransform backgroundTx = new AffineTransform();
     private Timer paintTicker = new Timer(100, this);
     private Timer animationTicker = new Timer(100, this);
     private ImageIcon thomasImageIcon = new ImageIcon();
@@ -53,22 +54,29 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     private int roadWidth;
     private int thomasXtranslate;
     public int x = 0;
-
+    /***********************************************************************************************
+     * Main
+     ***********************************************************************************************/
     public static void main(String[] args)
     {
         SwingUtilities.invokeLater(new Thomas());
     }
-
+    /***********************************************************************************************
+     * Run
+     ***********************************************************************************************/
     @Override
     public void run()
     {
         loadImages();
         setUpMainGameWindow();
         thomasThemeSong.play();
-        //animationTicker.start();
+        animationTicker.start();
         paintTicker.start();
     }
 
+    /***********************************************************************************************
+     * Paint
+     ***********************************************************************************************/
     public void paint(Graphics g)
     {
         g2 = (Graphics2D) g;
@@ -83,9 +91,8 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
      ***********************************************************************************************/
     private void drawRoad()
     {
-        g2.setTransform(identityTx);
-        g2.translate(0, heightOfScreen - 200);
-        int u = getToolkit().getScreenSize().width;
+        g2.setTransform(backgroundTx);
+        g2.translate(-roadImage.getWidth(null), heightOfScreen - 200);
         for (int i = 0; i < (int) (getToolkit().getScreenSize().width/roadImage.getWidth(null)); i++) //fits road images to screen width
         {
             g2.drawImage(roadImage, 0, 0, null);
@@ -112,9 +119,9 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
      ***********************************************************************************************/
     private void drawLowerTracks()
     {
-        g2.setTransform(identityTx);
-        g2.translate(0, heightOfScreen - 200);
-        for (int i = 0; i < (getToolkit().getScreenSize().getWidth()/trackImage.getWidth(null)); i++) //fits track images to screen width
+        g2.setTransform(backgroundTx);
+        g2.translate(-trackImage.getWidth(null), heightOfScreen - 200);
+        for (int i = 0; i < 1 + (getToolkit().getScreenSize().getWidth()/trackImage.getWidth(null)); i++) //fits track images to screen width
         {
             g2.drawImage(trackImage, 0, 0, null);
             g2.translate(trackImage.getWidth(null), 0);
@@ -127,7 +134,7 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     public void drawThomas(Graphics2D g2, boolean isGoingRight)
     {
         g2.setTransform(identityTx);
-        thomasTx.setToTranslation(500, 500);
+        thomasTx.setToTranslation(500, getToolkit().getScreenSize().height - 420);
         g2.setTransform(thomasTx);
         try
         {
@@ -149,18 +156,17 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     @Override
     public void actionPerformed(ActionEvent e)
     {
-//        if (e.getSource() == animationTicker) {
-//            if (g2 != null) {
-//                if (isGoingRight) {
-//                    g2.setTransform(identityTx);
-//                    drawThomas(g2, true);//.................... Draw Thomas
-//                }
-//                if (!isGoingRight) {
-//                    g2.setTransform(identityTx);
-//                    drawThomas(g2, false);//.................... Draw Thomas
-//                }
-//            }
-//        }
+        if (e.getSource() == animationTicker) {
+            if (g2 != null) {
+               backgroundTx.setToTranslation(backgroundTx.getTranslateX() + 10, 0);
+                if (backgroundTx.getTranslateX() > trackImage.getWidth(null))
+               {
+                   backgroundTx = new AffineTransform();
+                  drawLowerTracks();
+                  drawRoad();
+               }
+            }
+        }
         repaint();
     }
 
