@@ -17,6 +17,7 @@ import static javax.imageio.ImageIO.read;
 public class Thomas extends JComponent implements ActionListener, Runnable, KeyListener
 {
     public boolean isGoingRight = false;
+    public int x = 0;
     private Rectangle2D.Double upperTrackDetectionZone = new Rectangle2D.Double(0, 0, 200, 49);
     private URL thomasThemeAddress = getClass().getResource("Thomas The Tank Engine Theme Song.wav");
     private AudioClip thomasThemeSong = JApplet.newAudioClip(thomasThemeAddress);
@@ -53,7 +54,7 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     private int trackWidth;
     private int roadWidth;
     private int thomasXtranslate;
-    public int x = 0;
+
     /***********************************************************************************************
      * Main
      ***********************************************************************************************/
@@ -61,6 +62,7 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     {
         SwingUtilities.invokeLater(new Thomas());
     }
+
     /***********************************************************************************************
      * Run
      ***********************************************************************************************/
@@ -69,7 +71,7 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     {
         loadImages();
         setUpMainGameWindow();
-        thomasThemeSong.play();
+        thomasThemeSong.loop();
         animationTicker.start();
         paintTicker.start();
     }
@@ -93,7 +95,7 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     {
         g2.setTransform(backgroundTx);
         g2.translate(-roadImage.getWidth(null), heightOfScreen - 200);
-        for (int i = 0; i < (int) (getToolkit().getScreenSize().width/roadImage.getWidth(null)); i++) //fits road images to screen width
+        for (int i = 0; i < (int) (getToolkit().getScreenSize().width / roadImage.getWidth(null)); i++) //fits road images to screen width
         {
             g2.drawImage(roadImage, 0, 0, null);
             g2.translate(roadImage.getWidth(null), 0);
@@ -105,8 +107,8 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
      ***********************************************************************************************/
     private void drawUpperTracks()
     {
-        g2.setTransform(identityTx);
-        g2.translate(0, getToolkit().getScreenSize().height/2); // center in screen
+        g2.setTransform(backgroundTx);
+        g2.translate(0, getToolkit().getScreenSize().height / 2); // center in screen
         for (int i = 0; i < 2; i++) //fits track images to screen width
         {
             g2.translate(trackImage.getWidth(null), 0);
@@ -121,7 +123,7 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     {
         g2.setTransform(backgroundTx);
         g2.translate(-trackImage.getWidth(null), heightOfScreen - 200);
-        for (int i = 0; i < 1 + (getToolkit().getScreenSize().getWidth()/trackImage.getWidth(null)); i++) //fits track images to screen width
+        for (int i = 0; i < 1 + (getToolkit().getScreenSize().getWidth() / trackImage.getWidth(null)); i++) //fits track images to screen width
         {
             g2.drawImage(trackImage, 0, 0, null);
             g2.translate(trackImage.getWidth(null), 0);
@@ -136,15 +138,13 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
         g2.setTransform(identityTx);
         thomasTx.setToTranslation(500, getToolkit().getScreenSize().height - 420);
         g2.setTransform(thomasTx);
-        try
-        {
+        try {
             thomasSpriteImageCounter++;
             thomasSpriteImageCounter = thomasSpriteImageCounter % 8;
             thomasSpriteImage = thomasSpriteImageArray[thomasSpriteImageCounter];
             g2.drawImage(thomasSpriteImage, 0, 0, null);
 
-        } catch (Exception ex)
-        {
+        } catch (Exception ex) {
             System.out.println("error reading thomas thomasSpriteImage from thomas sprite thomasSpriteImage array");
         }
     }
@@ -158,13 +158,14 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     {
         if (e.getSource() == animationTicker) {
             if (g2 != null) {
-               backgroundTx.setToTranslation(backgroundTx.getTranslateX() + 10, 0);
-                if (backgroundTx.getTranslateX() > trackImage.getWidth(null))
-               {
-                   backgroundTx = new AffineTransform();
-                  drawLowerTracks();
-                  drawRoad();
-               }
+                backgroundTx.setToTranslation(backgroundTx.getTranslateX() + 10, 0);
+                if (backgroundTx.getTranslateX() > getToolkit().getScreenSize().width)
+                {
+                    backgroundTx = new AffineTransform();
+                    drawLowerTracks();
+                    drawRoad();
+                    drawUpperTracks();
+                }
             }
         }
         repaint();
