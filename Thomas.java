@@ -94,8 +94,8 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     private void drawRoad()
     {
         g2.setTransform(backgroundTx);
-        g2.translate(-roadImage.getWidth(null), heightOfScreen - 200);
-        for (int i = 0; i < (int) (getToolkit().getScreenSize().width / roadImage.getWidth(null)); i++) //fits road images to screen width
+        g2.translate(-widthOfScreen, heightOfScreen - 200);
+        for (int i = 0; i < (int)2 * (getToolkit().getScreenSize().width / roadImage.getWidth(null)); i++) //fits road images to screen width
         {
             g2.drawImage(roadImage, 0, 0, null);
             g2.translate(roadImage.getWidth(null), 0);
@@ -122,8 +122,8 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     private void drawLowerTracks()
     {
         g2.setTransform(backgroundTx);
-        g2.translate(-trackImage.getWidth(null), heightOfScreen - 200);
-        for (int i = 0; i < 1 + (getToolkit().getScreenSize().getWidth() / trackImage.getWidth(null)); i++) //fits track images to screen width
+        g2.translate(-widthOfScreen, heightOfScreen - 200);
+        for (int i = 0; i < 2 * (getToolkit().getScreenSize().getWidth() / trackImage.getWidth(null)); i++) //fits track images to screen width
         {
             g2.drawImage(trackImage, 0, 0, null);
             g2.translate(trackImage.getWidth(null), 0);
