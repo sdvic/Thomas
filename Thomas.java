@@ -14,10 +14,14 @@ import java.net.URL;
 
 import static javax.imageio.ImageIO.read;
 
+/***********************************************************************************************
+ * David Frieder's Thomas Game
+ * rev 0.9
+ * Copyright 2018
+ ***********************************************************************************************/
 public class Thomas extends JComponent implements ActionListener, Runnable, KeyListener
 {
     public boolean isGoingRight = false;
-    public int x = 0;
     private Rectangle2D.Double upperTrackDetectionZone = new Rectangle2D.Double(0, 0, 200, 49);
     private URL thomasThemeAddress = getClass().getResource("Thomas The Tank Engine Theme Song.wav");
     private AudioClip thomasThemeSong = JApplet.newAudioClip(thomasThemeAddress);
@@ -31,29 +35,24 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     private AffineTransform backgroundTx = new AffineTransform();
     private Timer paintTicker = new Timer(100, this);
     private Timer animationTicker = new Timer(100, this);
-    private ImageIcon thomasImageIcon = new ImageIcon();
     private Image thomasSpriteImage;
     private int thomasSpriteImageCounter;
     private Image roadImage;
     private Image trackImage;
-    private int roadXPos = 0;
     private int groundLevelTrackYPos = (int) (heightOfScreen * 0.809);
     private int level2TrackYPos = (int) (heightOfScreen * 0.2);
-    private double trackScale = 1.7;
     private boolean isGoingLeft = true;
     private boolean isNotMoving;
     private boolean isJumping;
     private boolean isFalling;
-    private int position;
     private int thomasMaxSpeed = 22;
     private int initialJumpingVelocity = -37;
     public int jumpingVelocity = initialJumpingVelocity;
     private int movingVelocity;
     private int gravityAcceleration = 1;
     private Graphics2D g2;
-    private int trackWidth;
     private int roadWidth;
-    private int thomasXtranslate;
+    private int trackWidth;
 
     /***********************************************************************************************
      * Main
@@ -85,7 +84,7 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
         drawRoad();//........................ Draw Road
         drawUpperTracks();//................. Draw Upper Tracks
         drawLowerTracks();//................. Draw Lower Tracks
-        drawThomas(g2, true);
+        drawThomas();
     }
 
     /***********************************************************************************************
@@ -95,7 +94,7 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     {
         g2.setTransform(backgroundTx);
         g2.translate(-widthOfScreen, heightOfScreen - 200);
-        for (int i = 0; i < (int)2 * (getToolkit().getScreenSize().width / roadImage.getWidth(null)); i++) //fits road images to screen width
+        for (int i = 0; i < (2 * (widthOfScreen / roadImage.getWidth(null))) + 2; i++) //fits road images to screen width
         {
             g2.drawImage(roadImage, 0, 0, null);
             g2.translate(roadImage.getWidth(null), 0);
@@ -108,7 +107,7 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     private void drawUpperTracks()
     {
         g2.setTransform(backgroundTx);
-        g2.translate(0, getToolkit().getScreenSize().height / 2); // center in screen
+        g2.translate(0, heightOfScreen / 2); // center in screen
         for (int i = 0; i < 2; i++) //fits track images to screen width
         {
             g2.translate(trackImage.getWidth(null), 0);
@@ -123,7 +122,7 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     {
         g2.setTransform(backgroundTx);
         g2.translate(-widthOfScreen, heightOfScreen - 200);
-        for (int i = 0; i < 2 * (getToolkit().getScreenSize().getWidth() / trackImage.getWidth(null)); i++) //fits track images to screen width
+        for (int i = 0; i < (2 * (widthOfScreen / trackImage.getWidth(null))) + 2; i++) //fits track images to screen width
         {
             g2.drawImage(trackImage, 0, 0, null);
             g2.translate(trackImage.getWidth(null), 0);
@@ -133,10 +132,10 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
     /***********************************************************************************************
      * Draw Thomas with sprite files
      ***********************************************************************************************/
-    public void drawThomas(Graphics2D g2, boolean isGoingRight)
+    public void drawThomas()
     {
         g2.setTransform(identityTx);
-        thomasTx.setToTranslation(500, getToolkit().getScreenSize().height - 420);
+        thomasTx.setToTranslation(500, heightOfScreen - 420);
         g2.setTransform(thomasTx);
         try {
             thomasSpriteImageCounter++;
@@ -159,16 +158,15 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
         if (e.getSource() == animationTicker) {
             if (g2 != null) {
                 backgroundTx.setToTranslation(backgroundTx.getTranslateX() + 10, 0);
-                if (backgroundTx.getTranslateX() > getToolkit().getScreenSize().width)
-                {
+                if (backgroundTx.getTranslateX() > widthOfScreen) {
                     backgroundTx = new AffineTransform();
-                    drawLowerTracks();
-                    drawRoad();
-                    drawUpperTracks();
                 }
             }
         }
-        repaint();
+        if (e.getSource() == paintTicker)
+        {
+            repaint();
+        }
     }
 
     /***********************************************************************************************
@@ -223,8 +221,9 @@ public class Thomas extends JComponent implements ActionListener, Runnable, KeyL
             System.out.println("error reading from thomas sprite array");
         }
         roadImage = Toolkit.getDefaultToolkit().createImage(getClass().getResource("ground.png"));
+        trackImage = Toolkit.getDefaultToolkit().createImage(getClass().getResource("Tracks.png"));
         roadWidth = roadImage.getWidth(null);
-        trackImage = Toolkit.getDefaultToolkit().createImage(getClass().getResource("Standard Gauge Train Track Sprite.png"));
+        trackWidth = roadImage.getWidth(null);
     }
 
     /***********************************************************************************************
