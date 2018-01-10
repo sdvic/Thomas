@@ -16,8 +16,8 @@ import static javax.imageio.ImageIO.read;
 
 /***********************************************************************************************
  * David Frieder's Thomas Game
- * rev 0.9
- * Copyright 2018
+ * rev 1.0
+ * Copyright 2018 David Frieder
  ***********************************************************************************************/
 public class Thomas extends JComponent implements ActionListener, Runnable, KeyListener
 {
